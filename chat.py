@@ -22,6 +22,9 @@ try:
     active_loop_data_set_path = os.environ.get("DEEPLAKE_DATASET_PATH")
 except KeyError:
     active_loop_data_set_path = st.secrets("DEEPLAKE_DATASET_PATH")
+print(openai.api_key[:3])
+print(active_loop_data_set_path[:3])
+
 
 # Create an instance of OpenAIEmbeddings
 embeddings = OpenAIEmbeddings()
