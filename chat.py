@@ -22,10 +22,6 @@ try:
     active_loop_data_set_path = os.environ.get("DEEPLAKE_DATASET_PATH")
 except KeyError:
     active_loop_data_set_path = st.secrets["DEEPLAKE_DATASET_PATH"]
-try:
-    st.write("ACTIVELOOP_TOKEN", st.secrets["ACTIVELOOP_TOKEN"])
-except Exception as e:
-    print(f"Exception {e} ignored.")
 
 
 # Create an instance of OpenAIEmbeddings
