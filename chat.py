@@ -45,7 +45,14 @@ db = DeepLake(
 def generate_response(prompt):
     # Generate a response using OpenAI's ChatCompletion API and the specified prompt
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are ChatGPT, a large language model trained by OpenAI. You are aiding the user in understanding a code base. Answer as concisely as possible.",
+            },
+            {"role": "user", "content": prompt},
+        ],
     )
     response = completion.choices[0].message.content
     return response
