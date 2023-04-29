@@ -14,8 +14,14 @@ load_dotenv()
 # Set the title for the Streamlit app
 st.title("Chat with Determined")
 # Set the OpenAI API key from the environment variable
-openai.api_key = os.environ.get("OPENAI_API_KEY")
-active_loop_data_set_path = os.environ.get("DEEPLAKE_DATASET_PATH")
+try:
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+except KeyError:
+    openai.api_key = st.secrets("OPENAI_API_KEY")
+try:
+    active_loop_data_set_path = os.environ.get("DEEPLAKE_DATASET_PATH")
+except KeyError:
+    active_loop_data_set_path = st.secrets("DEEPLAKE_DATASET_PATH")
 
 # Create an instance of OpenAIEmbeddings
 embeddings = OpenAIEmbeddings()
