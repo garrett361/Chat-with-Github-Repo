@@ -17,11 +17,16 @@ st.title("Chat with Determined")
 try:
     openai.api_key = os.environ.get("OPENAI_API_KEY")
 except KeyError:
-    openai.api_key = st.secrets("OPENAI_API_KEY")
+    openai.api_key = st.secrets["OPENAI_API_KEY"]
 try:
     active_loop_data_set_path = os.environ.get("DEEPLAKE_DATASET_PATH")
 except KeyError:
-    active_loop_data_set_path = st.secrets("DEEPLAKE_DATASET_PATH")
+    active_loop_data_set_path = st.secrets["DEEPLAKE_DATASET_PATH"]
+try:
+    st.write("ACTIVELOOP_TOKEN", st.secrets["ACTIVELOOP_TOKEN"])
+except Exception as e:
+    print(f"Exception {e} ignored.")
+
 print(openai.api_key[:3])
 print(active_loop_data_set_path[:3])
 
