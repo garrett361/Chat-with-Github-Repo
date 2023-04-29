@@ -27,9 +27,6 @@ try:
 except Exception as e:
     print(f"Exception {e} ignored.")
 
-print(openai.api_key[:3])
-print(active_loop_data_set_path[:3])
-
 
 # Create an instance of OpenAIEmbeddings
 embeddings = OpenAIEmbeddings()
@@ -40,22 +37,6 @@ db = DeepLake(
     read_only=True,
     embedding_function=embeddings,
 )
-
-
-def generate_response(prompt):
-    # Generate a response using OpenAI's ChatCompletion API and the specified prompt
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are ChatGPT, a large language model trained by OpenAI. You are aiding the user in understanding a code base. Answer as concisely as possible.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-    )
-    response = completion.choices[0].message.content
-    return response
 
 
 def get_text():
@@ -82,10 +63,10 @@ def search_db(db, query):
 
 # Initialize the session state for generated responses and past inputs
 if "generated" not in st.session_state:
-    st.session_state["generated"] = ["i am ready to help you ser"]
+    st.session_state["generated"] = ["What would you like to know about Determined AI?"]
 
 if "past" not in st.session_state:
-    st.session_state["past"] = ["hello"]
+    st.session_state["past"] = ["Hello!"]
 
 # Get the user's input from the text input field
 user_input = get_text()
