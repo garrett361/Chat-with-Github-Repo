@@ -1,7 +1,7 @@
 streamlit
-streamlit_chat
 langchain
 openai
 python-dotenv
 deeplake
 tiktoken
+faiss-cpu
