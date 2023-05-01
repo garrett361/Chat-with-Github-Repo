@@ -16,7 +16,7 @@ deeplake_repo_name = os.getenv("DEEPLAKE_REPO_NAME")
 ds = deeplake.empty(
     f"hub://{deeplake_username}/{deeplake_repo_name}",
     token=activeloop_token,
-    overwrite=False,
+    overwrite=True,
 )
 
 # Mimic structure that github.py will create

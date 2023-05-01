@@ -43,6 +43,7 @@ def load_docs(root_dir, github_base_url=None, splitter=None):
                 "pth",
                 "meta",
                 "eot",
+                "map",
             ):
                 try:
                     path = os.path.join(dirpath, file)
