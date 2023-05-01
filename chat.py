@@ -90,7 +90,7 @@ def get_full_query_from_chat_history():
             reversed_other_msgs.append(msg_type(content=msg))
     full_query = (
         [SystemMessage(content=system_message)]
-        + list(reversed_other_msgs)
+        + list(reversed(reversed_other_msgs))
         + [HumanMessage(content=latest_prompt)]
     )
     return full_query
