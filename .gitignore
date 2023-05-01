@@ -1,3 +1,4 @@
 gumroad
 .env
 .vscode
+__pycache__/
