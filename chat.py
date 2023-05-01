@@ -33,13 +33,6 @@ DB = DeepLake(
 )
 encoding = tiktoken.encoding_for_model(MODEL)
 
-if "ai" not in st.session_state:
-    st.session_state["ai"] = [
-        "Hi! What would you like to know about the Determined AI github repo?"
-    ]
-if "human" not in st.session_state:
-    st.session_state["human"] = []
-
 
 def get_system_prompt_with_context(context: str) -> str:
     system_prompt_template = """Given the following context and code, answer the following question. Do not use outside context, and do not assume the user can see the provided context. Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are only code snippets, and more snippets may be added during the conversation.
@@ -60,7 +53,11 @@ def get_context_from_prompt(prompt: str, k: int = 2) -> str:
     docs = DB.similarity_search(prompt, k)
 
     context = "\n\n".join(
-        [f'From file {d.metadata["source"]}:\n' + str(d.page_content) for d in docs]
+        [
+            f'From file {d.metadata["source"]} and github link {d.metadata["url"]}:\n'
+            + str(d.page_content)
+            for d in docs
+        ]
     )
 
     return context
@@ -77,14 +74,16 @@ def get_full_query_from_chat_history():
     reversed_other_msgs = []
     # See Sec. 6 of https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktokn.ipynb
     # for token counting rules.
-    for msg in reversed(st.session_state.human[:-1]):
+    chat_history = [
+        None
+        for _ in range(len(st.session_state.ai[1:]) + len(st.session_state.human[:-1]))
+    ]
+    chat_history[::2] = st.session_state.ai[1:]
+    chat_history[1::2] = st.session_state.human[:-1]
+    for msg in reversed(chat_history):
         token_limit -= len(encoding.encode(msg)) + 4
         if token_limit >= 0:
             reversed_other_msgs.append(HumanMessage(content=msg))
-    for msg in reversed(st.session_state.ai[1:]):
-        token_limit -= len(encoding.encode(msg)) + 4
-        if token_limit >= 0:
-            reversed_other_msgs.append(AIMessage(content=msg))
     full_query = (
         [SystemMessage(content=system_message)]
         + list(reversed_other_msgs)
@@ -150,6 +149,12 @@ def get_chat_generator(db, prompt):
 st.set_page_config(page_title="Determined AI Chatbot")
 st.title("Determined AI Chatbot")
 
+if "ai" not in st.session_state:
+    st.session_state["ai"] = [
+        "Hi! What would you like to know about the Determined AI github repo?"
+    ]
+if "human" not in st.session_state:
+    st.session_state["human"] = []
 
 st.markdown(st.session_state.ai[0])
 
