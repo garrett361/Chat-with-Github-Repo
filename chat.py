@@ -80,7 +80,8 @@ def get_full_query_from_chat_history():
         for _ in range(len(st.session_state.ai[1:]) + len(st.session_state.human[:-1]))
     ]
     chat_history[::2] = st.session_state.ai[1:]
-    chat_history[1::2] = st.session_state.human[:-1]
+    if len(chat_history):
+        chat_history[1::2] = st.session_state.human[:-1]
     for idx, msg in enumerate(reversed(chat_history)):
         # The ai message will always be last
         msg_type = HumanMessage if idx % 2 else AIMessage
