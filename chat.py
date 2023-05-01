@@ -36,7 +36,7 @@ encoding = tiktoken.encoding_for_model(MODEL)
 
 def get_system_prompt_with_context(context: str) -> str:
     system_prompt_template = """Given the following context and code, answer the following question. Do not use outside context, and do not assume the user can see the provided context. Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are only code snippets, and more snippets may be added during the conversation.
-        Do not generate code, only reference the exact code snippets that you have been provided with. If you are going to write code, make sure to specify the language of the code. For example, if you were writing Python, you would write the following:
+        Do not generate code, only reference the exact code snippets that you have been provided with. If you are going to write code, make sure to specify the language of the code and write the result in markdown. For example, if you were writing Python, you would write the following:
 
         ```python
         <python code goes here>
@@ -54,7 +54,7 @@ def get_context_from_prompt(prompt: str, k: int = 2) -> str:
 
     context = "\n\n".join(
         [
-            f'From file {d.metadata["source"]} and github link {d.metadata["url"]}:\n'
+            f'From file {d.metadata["source"]} (github url {d.metadata["url"]}):\n'
             + str(d.page_content)
             for d in docs
         ]
@@ -67,7 +67,8 @@ def get_full_query_from_chat_history():
     token_limit = 4000
     latest_prompt = st.session_state.human[-1]
     context = get_context_from_prompt(latest_prompt)
-    system_message = get_system_prompt_with_context(context)
+    st.session_state.context.append(context)
+    system_message = get_system_prompt_with_context(" ".join(st.session_state.context))
     latest_prompt_tokens = len(encoding.encode(latest_prompt))
     system_message_tokens = len(encoding.encode(system_message))
     token_limit -= latest_prompt_tokens + system_message_tokens
@@ -80,10 +81,12 @@ def get_full_query_from_chat_history():
     ]
     chat_history[::2] = st.session_state.ai[1:]
     chat_history[1::2] = st.session_state.human[:-1]
-    for msg in reversed(chat_history):
+    for idx, msg in enumerate(reversed(chat_history)):
+        # The ai message will always be last
+        msg_type = HumanMessage if idx % 2 else AIMessage
         token_limit -= len(encoding.encode(msg)) + 4
         if token_limit >= 0:
-            reversed_other_msgs.append(HumanMessage(content=msg))
+            reversed_other_msgs.append(msg_type(content=msg))
     full_query = (
         [SystemMessage(content=system_message)]
         + list(reversed_other_msgs)
@@ -132,16 +135,14 @@ def llm_thread(db, gen, query):
             temperature=0.7,
         )
 
-        # llm(get_full_query_from_chat_history())
         llm(query)
 
     finally:
         gen.close()
 
 
-def get_chat_generator(db, prompt):
+def get_chat_generator(db, query):
     gen = ThreadedGenerator()
-    query = get_full_query_from_chat_history()
     threading.Thread(target=llm_thread, args=(db, gen, query)).start()
     return gen
 
@@ -155,6 +156,9 @@ if "ai" not in st.session_state:
     ]
 if "human" not in st.session_state:
     st.session_state["human"] = []
+if "context" not in st.session_state:
+    st.session_state["context"] = []
+
 
 st.markdown(st.session_state.ai[0])
 
@@ -162,8 +166,9 @@ st.markdown(st.session_state.ai[0])
 user_input = st.text_input(label="user input", key="input", label_visibility="hidden")
 if user_input:
     st.session_state.human.append(user_input)
+    query = get_full_query_from_chat_history()
     resp_box = st.empty()
     st.session_state.ai.append("")
-    for response in get_chat_generator(DB, user_input):
+    for response in get_chat_generator(DB, query):
         st.session_state.ai[-1] += response
         resp_box.markdown(st.session_state.ai[-1])
