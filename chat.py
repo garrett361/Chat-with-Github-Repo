@@ -54,7 +54,7 @@ def search_db(db, query):
     retriever.search_kwargs["k"] = 10
     # Create a ChatOpenAI model instance
     model = ChatOpenAI(model=MODEL)
-    # Create a RetrievalQA instance from the model and retriever
+    # Create a RetrievlQA instance from the model and retriever
     qa = RetrievalQA.from_llm(model, retriever=retriever)
     # Return the result of the query
     return qa.run(query)
