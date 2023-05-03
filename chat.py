@@ -35,7 +35,7 @@ encoding = tiktoken.encoding_for_model(MODEL)
 
 
 def get_system_prompt_with_context(context: str) -> str:
-    system_prompt_template = """Given the following context and code, answer the following question. Do not use outside context, and do not assume the user can see the provided context. Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are only code snippets, and more snippets may be added during the conversation.
+    system_prompt_template = """Given the following context and code, answer the following question about the Determined AI Github Repo (url: http://www.github.com/determined-ai/determined/). Do not use outside context, and do not assume the user can see the provided context. Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are only code snippets, and more snippets may be added during the conversation.
         Do not generate code, only reference the exact code snippets that you have been provided with. If you are going to write code, make sure to specify the language of the code and write the result in markdown. For example, if you were writing Python, you would write the following:
 
         ```python
