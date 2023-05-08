@@ -53,7 +53,7 @@ def get_system_prompt_with_context(context: str) -> str:
     return system_prompt_template.format(context=context)
 
 
-def get_context_from_prompt(prompt: str, k: int = 3) -> str:
+def get_context_from_prompt(prompt: str, k: int = 4) -> str:
     docs = DB.similarity_search(prompt, k)
 
     context = "\n\n".join(
@@ -168,6 +168,6 @@ if user_input:
     query = get_full_query_from_chat_history()
     resp_box = st.empty()
     st.session_state.ai.append("")
-    for response in get_chat_generator(DB, query):
+    for response in get_chat_generator(query):
         st.session_state.ai[-1] += response
         resp_box.markdown(st.session_state.ai[-1])
