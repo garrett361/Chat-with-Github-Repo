@@ -41,16 +41,14 @@ encoding = tiktoken.encoding_for_model(MODEL)
 
 
 def get_system_prompt_with_context(context: str) -> str:
-    system_prompt_template = """Given the following context and code, answer the following question about the Determined AI Github Repo (url: http://www.github.com/determined-ai/determined/). Do not use outside context, and do not assume the user can see the provided context. Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are only code snippets, and more snippets may be added during the conversation.
-        Do not generate code, only reference the exact code snippets that you have been provided with. If you are going to write code, make sure to specify the language of the code and write the result in markdown. For example, if you were writing Python, you would write the following:
-
-        ```python
-        <python code goes here>
-        ```
+    system_prompt_template = """Given the following context, answer the following question about Hewlett Packard Enterprise's (HPE) filings with the Securities Exchange Commission (SEC). Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are selected passages from larger documents and additional passages may be added during the conversation.
+        Only reference the passages that you have been provided with. If you do not know the answer, say "I don't know"; do not make up information.
         
-        Now, here is the relevant context: 
+        Now, here is the relevant context from various passages: 
 
         Context: {context}
+
+        A chat history with the user's most recent question at the end now follows.
         """
     return system_prompt_template.format(context=context)
 
@@ -59,11 +57,7 @@ def get_context_from_prompt(prompt: str, k: int = 3) -> str:
     docs = DB.similarity_search(prompt, k)
 
     context = "\n\n".join(
-        [
-            f'From file {d.metadata["source"]} (github url {d.metadata["url"]}):\n'
-            + str(d.page_content)
-            for d in docs
-        ]
+        [f'From file {d.metadata["source"]}:\n' + str(d.page_content) for d in docs]
     )
 
     return context
