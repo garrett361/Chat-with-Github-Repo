@@ -4,4 +4,4 @@ openai
 python-dotenv
 deeplake
 tiktoken
-faiss-cpu
+pinecone-client

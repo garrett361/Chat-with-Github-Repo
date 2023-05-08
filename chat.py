@@ -3,6 +3,7 @@ import queue
 import threading
 
 import openai
+import pinecone
 import streamlit as st
 import tiktoken
 from defaults import MODEL
@@ -12,7 +13,7 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from langchain.vectorstores import DeepLake
+from langchain.vectorstores import Pinecone
 
 # Load environment variables from a .env file (containing OPENAI_API_KEY)
 load_dotenv()
@@ -22,15 +23,20 @@ try:
 except KeyError:
     openai.api_key = st.secrets["OPENAI_API_KEY"]
 try:
-    active_loop_data_set_path = os.environ.get("DEEPLAKE_DATASET_PATH")
+    pinecone.init(
+        api_key=os.environ["PINECONE_API_KEY"], environment="us-west1-gcp-free"
+    )
 except KeyError:
-    active_loop_data_set_path = st.secrets["DEEPLAKE_DATASET_PATH"]
-
-DB = DeepLake(
-    dataset_path=active_loop_data_set_path,
-    read_only=True,
-    embedding_function=OpenAIEmbeddings(),
+    pinecone.init(
+        api_key=st.secrets["PINECONE_API_KEY"], environment="us-west1-gcp-free"
+    )
+DB = Pinecone(
+    index=pinecone.Index("hpe-sec"),
+    embedding_function=OpenAIEmbeddings().embed_query,
+    text_key="text",
+    namespace="hpe-sec",
 )
+
 encoding = tiktoken.encoding_for_model(MODEL)
 
 
@@ -49,7 +55,7 @@ def get_system_prompt_with_context(context: str) -> str:
     return system_prompt_template.format(context=context)
 
 
-def get_context_from_prompt(prompt: str, k: int = 2) -> str:
+def get_context_from_prompt(prompt: str, k: int = 3) -> str:
     docs = DB.similarity_search(prompt, k)
 
     context = "\n\n".join(
@@ -126,7 +132,7 @@ class ChainStreamHandler(StreamingStdOutCallbackHandler):
         self.gen.send(token)
 
 
-def llm_thread(db, gen, query):
+def llm_thread(gen, query):
     try:
         llm = ChatOpenAI(
             model_name=MODEL,
@@ -142,19 +148,17 @@ def llm_thread(db, gen, query):
         gen.close()
 
 
-def get_chat_generator(db, query):
+def get_chat_generator(query):
     gen = ThreadedGenerator()
-    threading.Thread(target=llm_thread, args=(db, gen, query)).start()
+    threading.Thread(target=llm_thread, args=(gen, query)).start()
     return gen
 
 
-st.set_page_config(page_title="Determined AI Chatbot")
-st.title("Determined AI Chatbot")
+st.set_page_config(page_title="HPE SEC Chatbot")
+st.title("HPE SEC Chatbot")
 
 if "ai" not in st.session_state:
-    st.session_state["ai"] = [
-        "Hi! What would you like to know about the Determined AI github repo?"
-    ]
+    st.session_state["ai"] = ["Hi! What would you like to know about HPE SEC filings?"]
 if "human" not in st.session_state:
     st.session_state["human"] = []
 if "context" not in st.session_state:
