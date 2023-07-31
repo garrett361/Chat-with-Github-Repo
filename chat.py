@@ -34,7 +34,7 @@ DB = Pinecone(
     index=pinecone.Index("hpe-sec-index"),
     embedding_function=OpenAIEmbeddings().embed_query,
     text_key="text",
-    namespace="hpe-sec-index",
+    namespace="hpe-sec",
 )
 
 encoding = tiktoken.encoding_for_model(MODEL)
