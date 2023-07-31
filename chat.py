@@ -31,10 +31,10 @@ except KeyError:
         api_key=st.secrets["PINECONE_API_KEY"], environment="us-west1-gcp-free"
     )
 DB = Pinecone(
-    index=pinecone.Index("hpe-sec"),
+    index=pinecone.Index("hpe-sec-index"),
     embedding_function=OpenAIEmbeddings().embed_query,
     text_key="text",
-    namespace="hpe-sec",
+    namespace="hpe-sec-index",
 )
 
 encoding = tiktoken.encoding_for_model(MODEL)
@@ -43,8 +43,8 @@ encoding = tiktoken.encoding_for_model(MODEL)
 def get_system_prompt_with_context(context: str) -> str:
     system_prompt_template = """Given the following context, answer the following question about Hewlett Packard Enterprise's (HPE) filings with the Securities Exchange Commission (SEC). Try to be as detailed as possible and reference the components that you are looking at. Keep in mind that these are selected passages from larger documents and additional passages may be added during the conversation.
         Only reference the passages that you have been provided with. If you do not know the answer, say "I don't know"; do not make up information.
-        
-        Now, here is the relevant context from various passages: 
+
+        Now, here is the relevant context from various passages:
 
         Context: {context}
 
